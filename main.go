@@ -3,24 +3,19 @@ package main
 import "fmt"
 
 func main() {
-	//Basic Pointer
-	a := 10
-	fmt.Println("a = ", a)
 
-	ptrA := &a
-	fmt.Println("ptrA = ", ptrA)
-	fmt.Println("Value of ptrA = ", *ptrA)
+	var a, b int
 
-	*ptrA = 20
+	fmt.Print("Input num1: ")
+	fmt.Scanln(&a)
+	fmt.Print("Input num2: ")
+	fmt.Scanln(&b)
 
-	fmt.Println(a)
-
+	r := add(a, b)
+	fmt.Println(a, " + ", b, " = ", r)
+	fmt.Printf("%d + %d = %d", a, b, r)
 }
 
-/*
-Result
-a =  10
-ptrA =  0xc0420361d0
-Value of ptrA =  10
-20
-*/
+func add(x int, y int) int {
+	return x + y
+}
