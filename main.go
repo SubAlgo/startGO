@@ -2,31 +2,50 @@ package main
 
 import "fmt"
 
+//-----------PERSON-----------------
 type person struct {
 	Name     string
 	NickName string
 }
 
-func (p person) mutate() {
-	p.Name = "Hacker"
-	fmt.Println("inside mutate: ", p)
+func (p person) Talk() {
+	fmt.Println("Hello, I'm ", p.Name)
+	fmt.Println("My nickname is ", p.NickName)
 }
 
-func (p *person) mutate2() {
-	p.Name = "Hacker"
-	fmt.Println("inside mutate2: ", p)
+//-----------PERSON-----------------
+
+//-----------CAT------------------
+type cat struct{}
+
+func (cat) Talk() { //เหมือนเป็นการระบุว่า นี้เป็น Method ของ cat
+	fmt.Println("Nyaa nyaa")
+}
+
+//-----------CAT------------------
+
+//-----------DOG------------------
+type dog struct{}
+
+func (*dog) Talk() {
+	fmt.Println("Wan Wan")
+}
+
+//-----------DOG------------------
+
+type talkable interface {
+	Talk()
+}
+
+func talkWith(t talkable) { //talkWith implement talkable
+	t.Talk()
 }
 
 func main() {
-	var p1 person
-	p1.Name = "SubAlgo"
-	p1.NickName = "sual"
-	fmt.Println(p1)
-	p1.mutate()
-	fmt.Println("p1 after call method mutate : ", p1)
-
-	fmt.Println("")
-
-	p1.mutate2()
-	fmt.Println("p1 after call method mutate2 : ", p1)
+	p := person{"SubAlgo", "Sual"} //Create p
+	talkWith(p)                    //call func(method) talkWith and send paran (p)
+	talkWith(cat{})                //call func(method) talkWith and send paran (cat{})
+	talkWith(&dog{})               //call func(method) talkWith and send paran (&dog{})
+	d := dog{}
+	talkWith(&d)
 }
