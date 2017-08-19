@@ -2,40 +2,31 @@ package main
 
 import "fmt"
 
-//Basic struct
 type person struct {
 	Name     string
 	NickName string
 }
 
-func main() {
-	p1 := person{
-		Name:     "SubAlgo",
-		NickName: "sugo",
-	}
-	fmt.Println(p1)
-	mutatePerson(p1)
-	fmt.Println("p1.name after use func mutatePerson : ", p1.Name)
-
-	mutatePerson2(&p1) //call func mutatePerson2 and send pointer p1
-	fmt.Println("p1.name after use func mutatePerson2 : ", p1.Name)
-}
-
-func mutatePerson(p person) {
+func (p person) mutate() {
 	p.Name = "Hacker"
-	fmt.Println("p.Name in func mutatePerson : ", p.Name)
+	fmt.Println("inside mutate: ", p)
 }
 
-func mutatePerson2(p *person) {
-	p.Name = "Alola"
-	fmt.Println("p.Name in func mutatePerson2 : ", p.Name)
+func (p *person) mutate2() {
+	p.Name = "Hacker"
+	fmt.Println("inside mutate2: ", p)
 }
 
-/*
-Output
-{SubAlgo sugo}
-p.Name in func mutatePerson :  Hacker
-p1.name after use func mutatePerson :  SubAlgo
-p.Name in func mutatePerson2 :  Alola
-p1.name after use func mutatePerson2 :  Alola
-*/
+func main() {
+	var p1 person
+	p1.Name = "SubAlgo"
+	p1.NickName = "sual"
+	fmt.Println(p1)
+	p1.mutate()
+	fmt.Println("p1 after call method mutate : ", p1)
+
+	fmt.Println("")
+
+	p1.mutate2()
+	fmt.Println("p1 after call method mutate2 : ", p1)
+}
