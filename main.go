@@ -1,34 +1,38 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
-func main() {
-	checkType("SubAlgo")
-	checkType(10)
-	checkType(true)
+var (
+	errAgeTooLow  = errors.New("age too low")
+	errAgeTooHigh = errors.New("age too high")
+)
 
-	checkType2("SubAlgo")
-	checkType2(10)
-	checkType2(true)
-}
-
-func checkType(v interface{}) {
-	switch p := v.(type) {
-	case string:
-		fmt.Println("String: ", p)
-	case int:
-		fmt.Println("Int: ", p+10)
-	case bool:
-		fmt.Println("Bool: ", p)
+func validateAge(age int) error {
+	if age < 18 {
+		return errAgeTooLow
+	} else if age > 60 {
+		return fmt.Errorf("age too high")
+	} else {
+		return nil
 	}
 }
 
-func checkType2(v interface{}) {
-	param, ok := v.(string)
+func main() {
 
-	if ok {
-		fmt.Println("Param is string: ", param)
-	} else {
-		fmt.Println("Param is not string!!")
+	var age int
+	fmt.Print("Input your age: ")
+	fmt.Scanln(&age)
+
+	err := validateAge(age)
+	if err == errAgeTooLow {
+		fmt.Println("CAN NOT ENTER")
+		return
+	}
+	if err != nil {
+		fmt.Println("fuuuu")
+		return
 	}
 }
