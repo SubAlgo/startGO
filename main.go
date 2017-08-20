@@ -2,29 +2,23 @@ package main
 
 import (
 	"fmt"
+	"time"
 )
 
+// GOROUTINES != THREADS
 func main() {
 	fmt.Println("Start...")
-	doSafeWork()
-	fmt.Println("Done")
+	go talk("Hello")
+	go talk("hi")
+	fmt.Println("Waiting")
+	time.Sleep(5 * time.Second)
+	fmt.Println("***END***")
+
 }
 
-func doFailWork() {
-	panic("fail")
-}
-
-func doSafeWork() {
-	//defer func() {...} ()
-	//defer เหมือนเป็นการบังคับว่าก่อนจบ function ให้มาทำงานในสั่ง defer ก่อนที่จะจบ
-	//อย่างในกรณีนี้ ความจริงจะออกจาก function ตั้งแต่บรรทัด doFailWork()
-	//แต่พอ doFailWork() ทำงานจบจะถูกบังคับให้ทำใน defer ก่อนจบ
-	//เพื่อให้รู้ผลลัพธ์ที่แตกต่างให้ลอง commend doFailWork() ออก
-	defer func() {
-		r := recover()
-		fmt.Println("r inside doSafeWork ", r)
-	}()
-	doFailWork()
-	fmt.Println("work success")
-
+func talk(prefix string) {
+	for i := 0; i < 10; i++ {
+		fmt.Println(prefix, i)
+		time.Sleep(time.Second)
+	}
 }
