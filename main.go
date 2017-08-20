@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -26,5 +27,17 @@ func main() {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello, SubAlgo1"))
+	fmt.Println(r.URL.Path)
+	switch r.URL.Path {
+	case "/":
+		w.Write([]byte("Index Page"))
+	case "/about":
+		w.Write([]byte("about"))
+	case "/login":
+		w.Write([]byte("Login"))
+	default:
+		w.Write([]byte("404 Page Not Found"))
+	}
 }
+
+//39
