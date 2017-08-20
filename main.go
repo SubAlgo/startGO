@@ -1,38 +1,16 @@
 package main
 
 import (
-	"errors"
-	"fmt"
+	"log"
+	"os"
 )
-
-var (
-	errAgeTooLow  = errors.New("age too low")
-	errAgeTooHigh = errors.New("age too high")
-)
-
-func validateAge(age int) error {
-	if age < 18 {
-		return errAgeTooLow
-	} else if age > 60 {
-		return fmt.Errorf("age too high")
-	} else {
-		return nil
-	}
-}
 
 func main() {
-
-	var age int
-	fmt.Print("Input your age: ")
-	fmt.Scanln(&age)
-
-	err := validateAge(age)
-	if err == errAgeTooLow {
-		fmt.Println("CAN NOT ENTER")
-		return
-	}
+	f, err := os.Create("Hello.txt")
 	if err != nil {
-		fmt.Println("fuuuu")
+		log.Println(err)
 		return
 	}
+	defer f.Close() //สั่งปิด f เมื่อ run main จบ
+	f.WriteString("Hello")
 }
