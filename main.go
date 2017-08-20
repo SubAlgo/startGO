@@ -5,15 +5,26 @@ import (
 	"net/http"
 )
 
+/*
 func main() {
-	err := http.ListenAndServe(":8080", &indexHandler{})
+	err := http.ListenAndServe(":8080", &indexHandler1{})
 	log.Println(err)
 }
 
-type indexHandler struct{}
-
-func (*indexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+//--รูปแบบ Handler function > ServeHTTP(w http.ResponseWriter, r *http.Request) {}--
+type indexHandler1 struct{}
+func (*indexHandler1) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello, SubAlgo"))
 }
+*/
 
-//28
+//วิธีนี้จะเขียน func ขึ้นมาแล้วโยนเข้า http.HandlerFunc() เพื่อแปลงเป็น HandlerFunc
+func main() {
+	h := http.HandlerFunc(indexHandler)
+	err := http.ListenAndServe(":8080", h)
+	log.Println(err)
+}
+
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello, SubAlgo1"))
+}
