@@ -1,43 +1,38 @@
 package main
 
-import (
-	"fmt"
-	"log"
-	"net/http"
-)
+import "net/http"
+import "log"
 
-/*
-func main() {
-	err := http.ListenAndServe(":8080", &indexHandler1{})
-	log.Println(err)
-}
-
-//--รูปแบบ Handler function > ServeHTTP(w http.ResponseWriter, r *http.Request) {}--
-type indexHandler1 struct{}
-func (*indexHandler1) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello, SubAlgo"))
-}
-*/
-
-//วิธีนี้จะเขียน func ขึ้นมาแล้วโยนเข้า http.HandlerFunc() เพื่อแปลงเป็น HandlerFunc
-func main() {
-	h := http.HandlerFunc(indexHandler)
-	err := http.ListenAndServe(":8080", h)
-	log.Println(err)
-}
-
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.URL.Path)
+//Mutiplexer (MUX)
+func mux(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/":
-		w.Write([]byte("Index Page"))
+		indexHandler(w, r)
 	case "/about":
-		w.Write([]byte("about"))
+		aboutHandler(w, r)
 	case "/login":
-		w.Write([]byte("Login"))
+		loginHandler(w, r)
 	default:
-		w.Write([]byte("404 Page Not Found"))
+		http.NotFound(w, r)
+		//notFoudHandler(w, r)
 	}
 }
 
-//39
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Index Page"))
+}
+func aboutHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("About Page"))
+}
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Login Page"))
+}
+func notFoudHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("404 Page Not Foud1"))
+}
+
+func main() {
+	h := http.HandlerFunc(mux)
+	err := http.ListenAndServe(":8080", h)
+	log.Println(err)
+}
