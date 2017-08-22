@@ -1,29 +1,40 @@
 package main
 
-//Basic Middleware
+//Basic Middleware2 MutiMiddleware
 import (
 	"log"
 	"net/http"
-	"time"
 )
 
 func main() {
-	h := logger(http.HandlerFunc(indexHandler))
+	h := m1(m2(m3(http.HandlerFunc(indexHandler))))
 	err := http.ListenAndServe(":8080", h)
 	log.Println(err)
 }
-func logger(h http.Handler) http.Handler {
+
+type middleware func(http.Handler) http.Handler
+
+func m1(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//http://localhost:8080/about?hello=111
-		log.Printf("r.URL.Path: %s", r.URL.Path)       //r.URL.Path: /about
-		log.Printf("r.RequestURI: %s", r.RequestURI)   //r.RequestURI: /about?hello=111
-		log.Printf("r.URL.Query(): %s", r.URL.Query()) //r.URL.Query(): map[hello:[111]]
-		t := time.Now()
+		log.Println("m1")
 		h.ServeHTTP(w, r)
-		diff := time.Now().Sub(t)
-		log.Printf("path: %s, time: %d ms", r.URL.Path, diff/time.Microsecond)
 	})
 }
+
+func m2(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println("m2")
+		h.ServeHTTP(w, r)
+	})
+}
+
+func m3(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println("m3")
+		h.ServeHTTP(w, r)
+	})
+}
+
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Index Page1"))
 }
