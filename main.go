@@ -45,17 +45,28 @@ func allowRole(role string) middleware { //รับ role return minddleware
 	}
 }
 
-func allowRoles(roles ...string) middleware {
+func allowRoles(roles ...string) middleware { //สิ่งที่ roles ...string รับเข้ามาคือ ("admin", "stuff")
+	allow := make(map[string]bool)
+	for _, role := range roles {
+		allow[role] = true
+		log.Println(allow[role])
+	}
+	//ถ้าสมมติ reqRole มีค่าเป็น admin ดังนั้น allow[reqRole] = allow[admin] = true
+	//(true เพราะ กำหนดไว้ตอน map ด้านบน)
+	//ดังนั้น !true = false คำสั่งใน if ก็จะไม่ถูกทำงาน
+
+	//***แต่ถ้า reqRole ไม่ใช่ admin หรือ stuff
+	//allow[reqRole] = allow[xxx] = false
+	//ดังนัั้น !false = true ทำให้คำสั่งใน if ถูกสั่งให้ทำงาน
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			reqRole := r.Header.Get("Role")
-			for _, role := range roles {
-				if reqRole == role {
-					h.ServeHTTP(w, r)
-					return
-				}
+			reqRole := r.Header.Get("Role") //กำหนดให้ reqRole เก็บ Header ที่ Get มา
+			if !allow[reqRole] {
+				//log.Println(allow[reqRole])
+				http.Error(w, "Forbidden /admin-stuff", http.StatusForbidden)
+				return
 			}
-			http.Error(w, "Forbidden /admin-stuff", http.StatusForbidden)
+			h.ServeHTTP(w, r)
 		})
 	}
 }
