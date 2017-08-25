@@ -5,13 +5,14 @@ import (
 	"net/http"
 )
 
-//Config middleware manage same middleware
+//middleware: 1 page admin and stuff can sign in [Stupid Method]
 func main() {
 	//http.DefaultServeMux()
 	http.HandleFunc("/", indexHandler)                                        //ใช้ HandleFunc เพราะ indexHandler เป็นเหมือน func ธรรมดาที่ต้องแปลงเป็น HandleFunc
 	http.Handle("/admin", allowRole("admin")(http.HandlerFunc(adminHandler))) //ใช้ Handle เพราะ allowRoleAdmin retunr เป็น http.Handler
 	// --/admin จะผ่าน  middleware [allowRoleAdmin]
 	http.Handle("/stuff", allowRole("stuff")(http.HandlerFunc(stuffHandler)))
+	http.Handle("/admin-stuff", allowRoles("admin", "stuff")(http.HandlerFunc(adminStuffHandler)))
 	//ส่วนของ Handle กับ HandleFunc จะเรียก DefultServeMux อยู่แล้ว
 	//เมื่อมีการใช้ DefuleServeMux http.ListenAndServe ตรง handler ก็ใส่ค่า nil ได้เลย เพราะมันจะไปเรียกจาก DefultServeMux ที่เราทำไว้ก่อนหน้านี้
 	err := http.ListenAndServe(":8080", nil)
@@ -35,11 +36,26 @@ func allowRole(role string) middleware { //รับ role return minddleware
 	return func(h http.Handler) http.Handler { //Middleware
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			reqRole := r.Header.Get("Role")
-			if reqRole != "role" {
+			if reqRole != role {
 				http.Error(w, "Forbidden", http.StatusForbidden)
 				return
 			}
 			h.ServeHTTP(w, r)
+		})
+	}
+}
+
+func allowRoles(roles ...string) middleware {
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			reqRole := r.Header.Get("Role")
+			for _, role := range roles {
+				if reqRole == role {
+					h.ServeHTTP(w, r)
+					return
+				}
+			}
+			http.Error(w, "Forbidden /admin-stuff", http.StatusForbidden)
 		})
 	}
 }
@@ -87,4 +103,9 @@ func adminHandler(w http.ResponseWriter, r *http.Request) {
 //-------- STUFF-HANDLER --------
 func stuffHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello Stuff"))
+}
+
+//-------- ADMIN-STUFF-HANDLER --------
+func adminStuffHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Admin Stuff"))
 }
