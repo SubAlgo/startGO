@@ -1,53 +1,69 @@
 package main
 
-//Basic Middleware2 MutiMiddleware
 import (
 	"log"
 	"net/http"
 )
 
+//Config middleware 1
 func main() {
-	//h := m1(m2(m3(http.HandlerFunc(indexHandler))))
-	//m := chain([]middleware{m1, m2, m3})
-	m := chain(m1, m2, m3)
-	h := m(http.HandlerFunc(indexHandler))
-	err := http.ListenAndServe(":8080", h)
+	//http.DefaultServeMux()
+	http.HandleFunc("/", indexHandler)                                    //ใช้ HandleFunc เพราะ indexHandler เป็นเหมือน func ธรรมดาที่ต้องแปลงเป็น HandleFunc
+	http.Handle("/admin", allowRoleAdmin(http.HandlerFunc(adminHandler))) //ใช้ Handle เพราะ allowRoleAdmin retunr เป็น http.Handler
+	// --/admin จะผ่าน  middleware [allowRoleAdmin]
+	http.Handle("/stuff", allowRoleStuff(http.HandlerFunc(stuffHandler)))
+	//ส่วนของ Handle กับ HandleFunc จะเรียก DefultServeMux อยู่แล้ว
+	//เมื่อมีการใช้ DefuleServeMux http.ListenAndServe ตรง handler ก็ใส่ค่า nil ได้เลย เพราะมันจะไปเรียกจาก DefultServeMux ที่เราทำไว้ก่อนหน้านี้
+	err := http.ListenAndServe(":8080", nil)
 	log.Println(err)
+
 }
+
+/*********************************
+*			MIDDLEWARE			 *
+---------------------------------*/
 
 type middleware func(http.Handler) http.Handler
 
-func chain(hs ...middleware) middleware {
-	return func(h http.Handler) http.Handler {
-		for i := len(hs); i > 0; i-- {
-			h = hs[i-1](h)
-			log.Println("---", h)
+//-------- Middleware จัดการ Admin --------
+func allowRoleAdmin(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqRole := r.Header.Get("Role")
+		if reqRole != "admin" {
+			http.Error(w, "Forbidden Admin", http.StatusForbidden)
+			return
 		}
-		return h
-	}
-}
-
-func m1(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println("m1")
 		h.ServeHTTP(w, r)
 	})
 }
 
-func m2(h http.Handler) http.Handler {
+//-------- Middleware จัดการ Stuff --------
+func allowRoleStuff(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println("m2")
+		reqRole := r.Header.Get("Role")
+		if reqRole != "stuff" {
+			http.Error(w, "Forbidden Stuff", http.StatusForbidden)
+			return
+		}
 		h.ServeHTTP(w, r)
 	})
 }
 
-func m3(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println("m3")
-		h.ServeHTTP(w, r)
-	})
-}
+/*********************************
+*			HANDLER				 *
+---------------------------------*/
 
+//-------- INDEX-HANDLER --------
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Index Page1"))
+	w.Write([]byte("Index Page"))
+}
+
+//-------- ADMIN-HANDLER --------
+func adminHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello Admin"))
+}
+
+//-------- STUFF-HANDLER --------
+func stuffHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello Stuff"))
 }
