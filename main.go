@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-//middleware: 1 page admin and stuff can sign in [Stupid Method]
+//middleware: 1 page admin and stuff can sign in [struct Method]
 func main() {
 	//http.DefaultServeMux()
 	http.HandleFunc("/", indexHandler)                                        //ใช้ HandleFunc เพราะ indexHandler เป็นเหมือน func ธรรมดาที่ต้องแปลงเป็น HandleFunc
@@ -46,10 +46,11 @@ func allowRole(role string) middleware { //รับ role return minddleware
 }
 
 func allowRoles(roles ...string) middleware { //สิ่งที่ roles ...string รับเข้ามาคือ ("admin", "stuff")
-	allow := make(map[string]bool)
+	//allow := make(map[string]bool)
+	allow := make(map[string]struct{}) //เปลี่ยนจากการเก็บเป็น bool มาเป็น struct ทำให้ประหยัด memory มากกว่า
 	for _, role := range roles {
-		allow[role] = true
-		log.Println(allow[role])
+		//allow[role] = true
+		allow[role] = struct{}{} //struct{} = type struct | {} หมายถึง struct เปล่า
 	}
 	//ถ้าสมมติ reqRole มีค่าเป็น admin ดังนั้น allow[reqRole] = allow[admin] = true
 	//(true เพราะ กำหนดไว้ตอน map ด้านบน)
@@ -61,8 +62,10 @@ func allowRoles(roles ...string) middleware { //สิ่งที่ roles ...s
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			reqRole := r.Header.Get("Role") //กำหนดให้ reqRole เก็บ Header ที่ Get มา
-			if !allow[reqRole] {
-				//log.Println(allow[reqRole])
+			//if !allow[reqRole] {
+			//ให้ ok เช็คค่าว่ามีหรือไม่มีค่า
+			//สมมติ allow[reqRole] มีค่าเป็น admin -> ok จะมีค่าเป็น true เมื่อ !trune = false จะออกจาก if
+			if _, ok := allow[reqRole]; !ok {
 				http.Error(w, "Forbidden /admin-stuff", http.StatusForbidden)
 				return
 			}
